@@ -13,7 +13,9 @@ app.use(bodyParser.urlencoded({extended : true}));
 app.use(express.static("public"));
 
 
-
+app.get("/", function(req,res) {
+    res.render("list");
+})
 
 app.listen(port, function() {
     console.log(`Server running on port ${port}`);
