@@ -11,6 +11,7 @@
   "description": "A simple To-Do List website with authenticated session and based on HTML, CSS, JS and EJS. The purpose il primarily for portfolio.",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
