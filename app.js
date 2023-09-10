@@ -23,7 +23,11 @@ mongoose.connect(`mongodb+srv://${adminUser}:${adminPass}@cluster0.ecvxgsf.mongo
 
 // Mongoose models
 const itemSchema = {
-    name: String
+    name: String,
+    done: { 
+        type: Boolean,
+        default: false
+    }
 };
 
 const Item = mongoose.model("Item", itemSchema);
@@ -37,15 +41,18 @@ const List = mongoose.model("List", listSchema);
 
 // Default Items for new list
 const item1 = new Item({
-    name: "Hit the + button to add a new item."
+    name: "Hit the + button to add a new item.",
+    done: false
 });
 
 const item2 = new Item({
-    name: "<-- Hit this to mark an item as DONE."
+    name: "<-- Hit this to mark an item as DONE.",
+    done: false
 });
 
 const item3 = new Item({
-    name: "Hit this to remove an item -->"
+    name: "Hit this to remove an item -->",
+    done: false
 });
 
 const defaultItems = [item1, item2, item3];
@@ -90,9 +97,7 @@ app.post("/", function(req,res) {
 
 app.post("/delete", function(req,res) {
 
-    const checkedItemId = req.body.bin;
-
-    Item.findByIdAndRemove(checkedItemId)
+    Item.findByIdAndRemove(req.body.itemToDelete)
     .then(function() {
         console.log("Successfully deleted checked item!");
         res.redirect("/");
@@ -102,8 +107,28 @@ app.post("/delete", function(req,res) {
     })
 })
 
-app.post("/update", function(req,res) {
+app.post("/update", async function(req,res) {
     //Update the DONE status of the item
+    const itemToUpdate = await Item.findById(req.body.checkbox);
+    
+    console.log(itemToUpdate);
+    if(!itemToUpdate.done) {
+        Item.findByIdAndUpdate(itemToUpdate._id, {done: true})
+        .then(function(){
+            console.log("Item marked as done!");
+        })
+        .catch(function(err) {
+            console.log(err);
+        })
+    } else {
+        Item.findByIdAndUpdate(itemToUpdate._id, {done: false})
+        .then(function(){
+            console.log("Item marked as NOT done!");
+        })
+        .catch(function(err) {
+            console.log(err);
+        })
+    }
     res.redirect("/");
 })
 
