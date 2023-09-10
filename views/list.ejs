@@ -12,7 +12,13 @@
     <div class="main-flexbox">
 
         <div class="left-arrow">
-            <i class="fa-solid fa-angles-left"></i>
+            <form id="previous-form" action="/previous" method="post">
+                <button class="btn-left" name="" type="submit" value="">
+                    <i class="fa-solid fa-angles-left"></i>
+                </button>
+            </form>
+            
+            
         </div>
 
         <div class="list-container">
@@ -20,6 +26,30 @@
             <!-- Button trigger modal -->
             <button type="button" class="btn btn-primary btn-list-del" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 <i class="fa-solid fa-x"></i>
+            </button>
+            
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    ...
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary btn-list-new" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <i class="fa-solid fa-plus"></i>
             </button>
             
             <!-- Modal -->
@@ -73,8 +103,13 @@
             </div>
         </div>
 
+
         <div class="right-arrow">
-            <i class="fa-solid fa-angles-right"></i>
+            <form id="next-form" action="/next" method="post">
+                <button class="btn-right" name="" type="submit" value="">
+                    <i class="fa-solid fa-angles-right"></i>
+                </button>
+            </form>
         </div>
 
 

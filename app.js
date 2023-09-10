@@ -132,6 +132,14 @@ app.post("/update", async function(req,res) {
     res.redirect("/");
 })
 
+app.post("/next", function(req,res) {
+    res.redirect("/");
+})
+
+app.post("/previous", function(req,res) {
+    res.redirect("/");
+})
+
 
 app.listen(port, function() {
     console.log(`Server running on port ${port}`);
