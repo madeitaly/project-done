@@ -1,7 +1,7 @@
 html {
     background-color: #b3b4b9;
     /* background-image: -webkit-linear-gradient(65deg, #A683E3 50%, #E4E9FD 50%); */
-    min-height: 1000px;
+    /* min-height: 1000px; */
     font-family: 'helvetica neue';
 }
 
@@ -18,9 +18,20 @@ h1 {
     box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
 }
 
+.btn-list-del{
+    position: absolute;
+}
+
 #list-title {
     background-color: #8383e3;
     text-align: center;
+    position: relative;
+}
+
+.item-counter{
+    position: absolute;
+    right: 0;
+    margin: -30px auto;
 }
 
 .main-flexbox {
@@ -51,14 +62,30 @@ h1 {
     border-style: solid;
     border-width: 2px;
     border-color: black;
+
 }
 
 .list-item {
     display: flex;
+    position: relative;
     min-height: 60px;
     align-items: center;
     border-bottom: 1px solid #F1F1F1;
 }
+
+.btn-delete {
+    position: absolute;
+    right: 0;
+    background: none;
+    border: none;
+    padding-right: 3%;
+}
+
+/* TODO: Add fa-shake class for shake effect */
+.fa-trash {
+    color: #a1a5aa;
+}
+
 
 form.list-item {
     text-align: center;
@@ -69,7 +96,12 @@ input[type="checkbox"] {
     margin: 20px;
 }
 
-button {
+input:checked+p {
+    text-decoration: line-through;
+    text-decoration-color: #A683E3;
+}
+
+.btn-new {
     min-height: 50px;
     width: 50px;
     border-radius: 50%;
@@ -105,7 +137,7 @@ input[type="text"]:focus {
 p {
     margin: 0;
     padding: 20px;
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 200;
     color: #00204a;
 }

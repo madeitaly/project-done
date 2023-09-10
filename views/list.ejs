@@ -3,8 +3,7 @@
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <img src="TBD" alt="Logo" width="30" height="24"
-                    class="d-inline-block align-text-top">
+                <img src="TBD" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
                 Project Done!
             </a>
         </div>
@@ -13,31 +12,69 @@
     <div class="main-flexbox">
 
         <div class="left-arrow">
-            <p> <- </p>
+            <i class="fa-solid fa-angles-left"></i>
         </div>
 
         <div class="list-container">
+
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary btn-list-del" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                <i class="fa-solid fa-x"></i>
+            </button>
+            
+            <!-- Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    ...
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+                </div>
+            </div>
+
             <div class="box" id="list-title">
                 <h1>Title of the List</h1>
+                <p class="item-counter">0/3</p>
             </div>
 
             <div class="box">
-                <div class="list-item">
-                    <input name="checkbox" type="checkbox">
-                    <p>This is an item</p>
-                    <p>[DEL]</p>
-                </div>
+                <% newListItems.forEach(function(item) { %>
+                    
+                    <form id="delete-form" action="/delete" method="post"></form>
+                    <form id="update-form" action="/update" method="post"></form>
+                    <div class="list-item">
+                        <input name="checkbox" type="checkbox" value="<%=item._id%>" onChange="this.form.submit()" form="update-form">
+                        <p>
+                            <%= item.name %>
+                        </p>
+                        <button class="btn-delete" name="bin" type="submit" value="<%=item._id%>" form="delete-form">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
 
-                <form class="list-item" action="/" method="">
-                    <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
-                    <button type="submit" name="list" value=>+</button>
-                </form>
+                <% }); %>
+
+                    <form class="list-item" action="/" method="post">
+                        <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
+                        <button class="btn-new" type="submit" name="list" value=>
+                            <i class="fa-solid fa-plus" style="color: white;"></i>
+                        </button>
+                    </form>
 
             </div>
         </div>
 
         <div class="right-arrow">
-            <p> -> </p>
+            <i class="fa-solid fa-angles-right"></i>
         </div>
 
 
