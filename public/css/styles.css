@@ -39,6 +39,12 @@ h1 {
     margin: -30px auto;
 }
 
+.list-date{
+    position:absolute;
+    left: 0;
+    margin: -30px auto;
+}
+
 .main-flexbox {
     display: flex;
     justify-content: center;
@@ -84,7 +90,6 @@ h1 {
     right: 0;
     background: none;
     border: none;
-    padding-right: 3%;
 }
 
 /* TODO: Add fa-shake class for shake effect */

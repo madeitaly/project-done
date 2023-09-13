@@ -3,7 +3,7 @@
     <nav class="navbar bg-body-tertiary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <img src="TBD" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+                <img src="images/done_logo.jpeg" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
                 Project Done!
             </a>
         </div>
@@ -13,7 +13,7 @@
 
         <div class="left-arrow">
             <form id="previous-form" action="/previous" method="post">
-                <button class="btn-left" name="" type="submit" value="">
+                <button class="btn-left" name="listName" type="submit" value="<%=listTitle%>">
                     <i class="fa-solid fa-angles-left"></i>
                 </button>
             </form>
@@ -72,30 +72,41 @@
             </div>
 
             <div class="box" id="list-title">
-                <h1>Title of the List</h1>
+                <h1><%= listTitle %></h1>
+                <p class="list-date">Created on 12/09/2023</p>
                 <p class="item-counter">0/3</p>
             </div>
 
             <div class="box">
+                
                 <% newListItems.forEach(function(item) { %>
                     
-                    <form id="delete-form" action="/delete" method="post"></form>
-                    <form id="update-form" action="/update" method="post"></form>
+                    
+                    
                     <div class="list-item">
-                        <input name="checkbox" type="checkbox" value="<%=item._id%>" onChange="this.form.submit()" form="update-form">
+                        <form id="update-form" action="/update" method="post">
+                            <input name="checkbox" type="checkbox" value="<%=item._id%>" <%= item.done ? "checked" : "" %> onChange="this.form.submit()">
+                            <input type="hidden" name="listName" value="<%=listTitle%>"></input>
+                    
+                        </form>
+
                         <p>
                             <%= item.name %>
                         </p>
-                        <button class="btn-delete" name="itemToDelete" type="submit" value="<%=item._id%>" form="delete-form">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
 
+                        <form id="delete-form" action="/delete" method="post">
+                            <button class="btn-delete" name="itemToDelete" type="submit" value="<%=item._id%>" >
+                                <i class="fa-solid fa-trash"></i>
+                                <input type="hidden" name="listName" value="<%= listTitle %>"></input>
+                            </button>
+                        </form>
+                    </div> 
+                
                 <% }); %>
 
                     <form class="list-item" action="/" method="post">
                         <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
-                        <button class="btn-new" type="submit" name="list" value=>
+                        <button class="btn-new" type="submit" name="list" value="<%=listTitle%>">
                             <i class="fa-solid fa-plus" style="color: white;"></i>
                         </button>
                     </form>
@@ -106,8 +117,9 @@
 
         <div class="right-arrow">
             <form id="next-form" action="/next" method="post">
-                <button class="btn-right" name="" type="submit" value="">
+                <button class="btn-right" name="listName" type="submit" value="<%=listTitle%>">
                     <i class="fa-solid fa-angles-right"></i>
+                    <!-- <input type="hidden" name="listName" value="<%=listTitle%>"></input> -->
                 </button>
             </form>
         </div>
