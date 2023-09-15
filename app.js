@@ -40,7 +40,8 @@ const Item = mongoose.model("Item", itemSchema);
 const listSchema = {
     name: String,
     items: [itemSchema],
-    index: Number
+    index: Number,
+    created: Date
 };
 
 const List = mongoose.model("List", listSchema);
@@ -67,7 +68,8 @@ const defaultItems = [item1, item2, item3];
 const defaultList = new List( {
     name: "Today",
     items: defaultItems,
-    index: 0
+    index: 0,
+    created: new Date(Date.now()).toLocaleString()
 });
 
 //Function to return the number of lists on the 
@@ -75,6 +77,29 @@ async function getListCounter() {
     
     const foundLists = await List.find().exec();
     return foundLists.length;
+}
+
+//Function to return the last index used
+async function getMaxIndex() {
+    const maxIndexList = await List.findOne().sort({index:-1});
+    return maxIndexList.index;
+}
+
+//Function that returns the next index to be used
+async function getNextIndex() {
+    const nextIndex = await getMaxIndex();
+    return (nextIndex + 1);
+}
+
+//Function to create the default collection TODAY
+async function createDefaultList() {
+    List.create(defaultList)
+    .then(function() {
+        console.log(`Created default Today List`);
+    })
+    .catch(function(err) {
+        console.log(err);
+    });
 }
 
 /////////////////////////////////////
@@ -87,19 +112,12 @@ app.get("/", async function(req,res) {
    
     //If there are no lists then create a default Today list
     if(listCounter === 0) {
-        List.create(defaultList)
-        .then(function() {
-            console.log(`Created default Today List`);
-        })
-        .catch(function(err) {
-            console.log(err);
-        });
+        await createDefaultList();
     }
 
     //Find the items in Today List and render the page
-    List.findOne({name: "Today"})
+    await List.findOne({name: "Today"})
     .then(function(todayList) {
-
         if(todayList.items.length === 0) {
             //Add default Items to Today's List
             todayList.items = defaultItems;
@@ -110,7 +128,10 @@ app.get("/", async function(req,res) {
             })
         } else {
             //Render the default List
-            res.render("list", { listTitle: todayList.name, newListItems: todayList.items })
+            res.render("list", { 
+                listTitle: todayList.name, 
+                newListItems: todayList.items,
+                creationDate: todayList.created  })
         }     
     })
     .catch(function(err) {
@@ -121,7 +142,7 @@ app.get("/", async function(req,res) {
 
 app.get("/:customListName", async function(req,res) {
     
-    let listIndex = await getListCounter();
+    let listIndex = await getNextIndex();
     
     const customListName = _.capitalize(req.params.customListName);
 
@@ -132,7 +153,8 @@ app.get("/:customListName", async function(req,res) {
             const newList = new List({
                 name: customListName,
                 items: defaultItems,
-                index: listIndex
+                index: listIndex,
+                created: new Date(Date.now()).toLocaleString()
             });
 
             newList.save()
@@ -145,7 +167,10 @@ app.get("/:customListName", async function(req,res) {
             })
         } else {
             // Show an existing List
-            res.render("list", { listTitle: foundList.name, newListItems: foundList.items })
+            res.render("list", { 
+                listTitle: foundList.name, 
+                newListItems: foundList.items,
+                creationDate: foundList.created })
         }
     })
     .catch(function(err) {
@@ -246,27 +271,24 @@ app.post("/update", async function(req,res) {
 
 app.post("/next", async function(req,res) {
     //Find biggest list's index
-    let maxIndex = await getListCounter();
-    const currentList = req.body.listName;
+    const maxIndex = await getMaxIndex();
 
+    const currentList = req.body.listName;
+    
     //Find the current list index
     List.findOne({name: currentList})
-    .then(function(foundList) {
-        //Determine the index of the next list:
-        let nextListIndex = foundList.index + 1;
-        if(nextListIndex === maxIndex )
+    .then(async function(foundList) {
+        if(foundList.index === maxIndex)
         {
-            nextListIndex = 0;
-        }
-        //Retrive the next List to display
-        List.findOne({index: nextListIndex})
-        .then(function(nextList){
+            console.log(`Next List is Today, with index 0`);
+            res.redirect("/");
+
+        } else {
+            // Determine next index
+            const nextList = await List.findOne({index: {$gt: foundList.index}});
             console.log(`Next List is ${nextList.name}, with index ${nextList.index}`);
             res.redirect("/" + nextList.name);
-        })
-        .catch(function(err) {
-            console.log(err);
-        })
+        }
     })
     .catch(function(err) {
         console.log(err);
@@ -275,31 +297,60 @@ app.post("/next", async function(req,res) {
 
 app.post("/previous", async function(req,res) {
     //Find biggest list's index
-    let maxIndex = await getListCounter();
+    const maxIndex = await getMaxIndex();
+
     const currentList = req.body.listName;
 
     //Find the current list index
     List.findOne({name: currentList})
-    .then(function(foundList) {
-        //Determine the index of the next list:
-        let prevListIndex = foundList.index - 1;
-        if(prevListIndex < 0 )
+    .then(async function(foundList) {
+        if(foundList.index === 0)
         {
-            prevListIndex = maxIndex-1;
-        }
-        //Retrive the next List to display
-        List.findOne({index: prevListIndex})
-        .then(function(prevList){
+            //Find list with maxIndex
+            const maxIndexList = await List.findOne({index: maxIndex});
+            console.log(`Previous List is ${maxIndexList.name}, with index ${maxIndexList.index}`);
+            res.redirect("/" + maxIndexList.name);
+        } else {
+            //List with lower index
+            const prevLists = await List.find().sort({index:-1});
+            //console.log(prevLists);
+            var tempPrevIndex = 0;
+
+            prevLists.forEach(function(list) {
+                if(list.index < foundList.index && list.index > tempPrevIndex) {
+                    tempPrevIndex = list.index
+                }
+            })
+
+            const prevList = await List.findOne({index: tempPrevIndex});
             console.log(`Previous List is ${prevList.name}, with index ${prevList.index}`);
             res.redirect("/" + prevList.name);
-        })
-        .catch(function(err) {
-            console.log(err);
-        })
+        }
     })
     .catch(function(err) {
         console.log(err);
     })
+})
+
+app.post("/del", async function(req,res){
+    const listToDelete = req.body.listName;
+
+    List.deleteOne({ name: listToDelete})
+    .then(function() {
+        console.log(`Deleted List ${listToDelete}`);
+    })
+    .catch(function(err) {
+        console.log(err);
+    })
+
+    res.redirect("/");
+})
+
+app.post("/new", async function(req, res) {
+    const newListName = req.body.listName;
+    console.log(newListName);
+    
+    res.redirect("/" + newListName);
 })
 
 
