@@ -107,9 +107,9 @@ input[type="checkbox"] {
     margin: 20px;
 }
 
-input:checked+p {
+.cross {
     text-decoration: line-through;
-    text-decoration-color: #A683E3;
+    text-decoration-color: #212022;
 }
 
 .btn-new {

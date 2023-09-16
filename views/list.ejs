@@ -87,13 +87,13 @@
                 <% newListItems.forEach(function(item) { %>
                     <div class="list-item">
                         <form id="update-form" action="/update" method="post">
-                            <input name="checkbox" type="checkbox" value="<%=item._id%>" <%= item.done ? "checked" : "" %> onChange="this.form.submit()">
+                            <input name="checkbox" class="cross" type="checkbox" value="<%=item._id%>" <%= item.done ? "checked" : "" %> onChange="this.form.submit()">
                             <input type="hidden" name="itemStatus" value="<%=item.done%>"></input>
                             <input type="hidden" name="itemId" value="<%=item._id%>"></input>
                             <input type="hidden" name="listName" value="<%=listTitle%>"></input>
                         </form>
 
-                        <p>
+                        <p <%= item.done ? "style=text-decoration:line-through;text-decoration-color:#212022;" : ""%>>
                             <%= item.name %>
                         </p>
 
