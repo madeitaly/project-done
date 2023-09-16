@@ -88,6 +88,8 @@
                     <div class="list-item">
                         <form id="update-form" action="/update" method="post">
                             <input name="checkbox" type="checkbox" value="<%=item._id%>" <%= item.done ? "checked" : "" %> onChange="this.form.submit()">
+                            <input type="hidden" name="itemStatus" value="<%=item.done%>"></input>
+                            <input type="hidden" name="itemId" value="<%=item._id%>"></input>
                             <input type="hidden" name="listName" value="<%=listTitle%>"></input>
                         </form>
 

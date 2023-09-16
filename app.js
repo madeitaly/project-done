@@ -14,7 +14,7 @@ const adminPass = process.env.MONGO_PASSWORD;
 
 app.set('view engine', 'ejs');
 
-app.use(bodyParser.urlencoded({extended : true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // MongoDB Atlas connection
@@ -29,7 +29,7 @@ mongoose.connect(`mongodb+srv://${adminUser}:${adminPass}@cluster0.ecvxgsf.mongo
 // Mongoose models
 const itemSchema = {
     name: String,
-    done: { 
+    done: {
         type: Boolean,
         default: false
     }
@@ -65,7 +65,7 @@ const item3 = new Item({
 const defaultItems = [item1, item2, item3];
 
 // Default Today list when all lists are deleted
-const defaultList = new List( {
+const defaultList = new List({
     name: "Today",
     items: defaultItems,
     index: 0,
@@ -74,14 +74,14 @@ const defaultList = new List( {
 
 //Function to return the number of lists on the 
 async function getListCounter() {
-    
+
     const foundLists = await List.find().exec();
     return foundLists.length;
 }
 
 //Function to return the last index used
 async function getMaxIndex() {
-    const maxIndexList = await List.findOne().sort({index:-1});
+    const maxIndexList = await List.findOne().sort({ index: -1 });
     return maxIndexList.index;
 }
 
@@ -94,266 +94,261 @@ async function getNextIndex() {
 //Function to create the default collection TODAY
 async function createDefaultList() {
     List.create(defaultList)
-    .then(function() {
-        console.log(`Created default Today List`);
-    })
-    .catch(function(err) {
-        console.log(err);
-    });
+        .then(function () {
+            console.log(`Created default Today List`);
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
 }
 
 /////////////////////////////////////
 //  ROUTING OF THE HTTPS REQUESTS ///
 /////////////////////////////////////
 
-app.get("/", async function(req,res) {
+app.get("/", async function (req, res) {
 
     const listCounter = await getListCounter();
-   
+
     //If there are no lists then create a default Today list
-    if(listCounter === 0) {
+    if (listCounter === 0) {
         await createDefaultList();
     }
 
     //Find the items in Today List and render the page
-    await List.findOne({name: "Today"})
-    .then(function(todayList) {
-        if(todayList.items.length === 0) {
-            //Add default Items to Today's List
-            todayList.items = defaultItems;
-            todayList.save()
-            .then(res.redirect("/"))
-            .catch(function(err) {
-                console.log(err);
-            })
-        } else {
-            //Render the default List
-            res.render("list", { 
-                listTitle: todayList.name, 
-                newListItems: todayList.items,
-                creationDate: todayList.created  })
-        }     
-    })
-    .catch(function(err) {
-        console.log(err);
-    })
+    await List.findOne({ name: "Today" })
+        .then(function (todayList) {
+            if (todayList.items.length === 0) {
+                //Add default Items to Today's List
+                todayList.items = defaultItems;
+                todayList.save()
+                    .then(res.redirect("/"))
+                    .catch(function (err) {
+                        console.log(err);
+                    })
+            } else {
+                //Render the default List
+                res.render("list", {
+                    listTitle: todayList.name,
+                    newListItems: todayList.items,
+                    creationDate: todayList.created
+                })
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
 })
 
 
-app.get("/:customListName", async function(req,res) {
-    
+app.get("/:customListName", async function (req, res) {
+
     let listIndex = await getNextIndex();
-    
+
     const customListName = _.capitalize(req.params.customListName);
 
-    List.findOne({name: customListName})
-    .then(function(foundList) {
-        if(!foundList) {
-            //Create the new list here
-            const newList = new List({
-                name: customListName,
-                items: defaultItems,
-                index: listIndex,
-                created: new Date(Date.now()).toLocaleString()
-            });
+    List.findOne({ name: customListName })
+        .then(function (foundList) {
+            if (!foundList) {
+                //Create the new list here
+                const newList = new List({
+                    name: customListName,
+                    items: defaultItems,
+                    index: listIndex,
+                    created: new Date(Date.now()).toLocaleString()
+                });
 
-            newList.save()
-            .then(function() {
-                console.log(`Created new List, index ${listIndex}`);
-                res.redirect("/" + customListName);
-            })
-            .catch(function(err) {
-                console.log(err);
-            })
-        } else {
-            // Show an existing List
-            res.render("list", { 
-                listTitle: foundList.name, 
-                newListItems: foundList.items,
-                creationDate: foundList.created })
-        }
-    })
-    .catch(function(err) {
-        console.log(err);
-    })
+                newList.save()
+                    .then(function () {
+                        console.log(`Created new List, index ${listIndex}`);
+                        res.redirect("/" + customListName);
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                    })
+            } else {
+                // Show an existing List
+                res.render("list", {
+                    listTitle: foundList.name,
+                    newListItems: foundList.items,
+                    creationDate: foundList.created
+                })
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
 })
 
 
-app.post("/", async function(req,res) {
+app.post("/", async function (req, res) {
 
     const currentList = req.body.list;
     const newItem = new Item({
         name: req.body.newItem
     });
-    
-    if(currentList === "Today"){
-        List.findOne({name: "Today"})
-        .then(function(foundList) {
-            
-            foundList.items.push(newItem);
 
-            foundList.save()
-            .then(res.redirect("/"))
-            .catch(function(err) {
-                console.log(err);
-            })
-        })
-        .catch(function(err) {
-            console.log(err);
-        })
-    } else {
-        List.findOne({name: currentList})
-        .then(function(foundList) {
+    List.findOne({ name: currentList })
+        .then(function (foundList) {
 
             //console.log(`This is the List ${foundList}`);
 
             foundList.items.push(newItem);
 
             foundList.save()
-            .then(res.redirect("/" + currentList))
-            .catch(function(err) {
-                console.log(err);
-            })
+                .then(function () {
+                    if (currentList === "Today") {
+                        res.redirect("/");
+                    } else {
+                        res.redirect("/" + currentList);
+                    }
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
         })
-        .catch(function(err) {
-            console.log(err);
-        })
-    }
 })
 
-app.post("/delete", function(req,res) {
+app.post("/delete", function (req, res) {
 
     const listName = req.body.listName;
-    const deletedItemId= req.body.itemToDelete;
+    const deletedItemId = req.body.itemToDelete;
 
-    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: deletedItemId}}})
-    .then(function() {
-        console.log(`Successfully deleted item ${deletedItemId}`);
-        if( listName === "Today") {
-            res.redirect("/");
-        } else {
-            res.redirect("/" + listName);
-        }})
-    .catch(function(err) {
-        console.log(err);
-    });
+    List.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: deletedItemId } } })
+        .then(function () {
+            console.log(`Successfully deleted item ${deletedItemId}`);
+            if (listName === "Today") {
+                res.redirect("/");
+            } else {
+                res.redirect("/" + listName);
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
 })
 
-app.post("/update", async function(req,res) {
+app.post("/update", async function (req, res) {
 
-    // const itemToUpdate = await Item.findById(req.body.checkbox);
-    // console.log(itemToUpdate);
-    // itemToUpdate.done = !(itemToUpdate.done);
-    // await itemToUpdate.save();
-    //Update the DONE status of the item
-    // const itemToUpdate = await Item.findById(req.body.checkbox);
-    
-    //console.log(itemToUpdate);
-    //if(!itemToUpdate.done) {
-        // Item.findByIdAndUpdate(itemToUpdate._id, {done: !done})
-        // .then(function(){
-        //     console.log("Item marked as done!");
-        // })
-        // .catch(function(err) {
-        //     console.log(err);
-        // })
-   // } else {
-    //     Item.findByIdAndUpdate(itemToUpdate._id, {done: false})
-    //     .then(function(){
-    //         console.log("Item marked as NOT done!");
-    //     })
-    //     .catch(function(err) {
-    //         console.log(err);
-    //     })
-    // }
-    res.redirect("/");
-})
+    const listName = req.body.listName;
+    const updatedItem = req.body.itemId;
 
-app.post("/next", async function(req,res) {
-    //Find biggest list's index
-    const maxIndex = await getMaxIndex();
+    List.findOne({ name: listName })
+        .then(function (foundList) {
+            foundList.items.forEach(function (item) {
 
-    const currentList = req.body.listName;
-    
-    //Find the current list index
-    List.findOne({name: currentList})
-    .then(async function(foundList) {
-        if(foundList.index === maxIndex)
-        {
-            console.log(`Next List is Today, with index 0`);
-            res.redirect("/");
-
-        } else {
-            // Determine next index
-            const nextList = await List.findOne({index: {$gt: foundList.index}});
-            console.log(`Next List is ${nextList.name}, with index ${nextList.index}`);
-            res.redirect("/" + nextList.name);
-        }
-    })
-    .catch(function(err) {
-        console.log(err);
-    })
-})
-
-app.post("/previous", async function(req,res) {
-    //Find biggest list's index
-    const maxIndex = await getMaxIndex();
-
-    const currentList = req.body.listName;
-
-    //Find the current list index
-    List.findOne({name: currentList})
-    .then(async function(foundList) {
-        if(foundList.index === 0)
-        {
-            //Find list with maxIndex
-            const maxIndexList = await List.findOne({index: maxIndex});
-            console.log(`Previous List is ${maxIndexList.name}, with index ${maxIndexList.index}`);
-            res.redirect("/" + maxIndexList.name);
-        } else {
-            //List with lower index
-            const prevLists = await List.find().sort({index:-1});
-            //console.log(prevLists);
-            var tempPrevIndex = 0;
-
-            prevLists.forEach(function(list) {
-                if(list.index < foundList.index && list.index > tempPrevIndex) {
-                    tempPrevIndex = list.index
+                if (item._id == updatedItem) {
+                    //console.log(`Found item ${item._id}`);
+                    if (item.done === false) {
+                        item.done = true;
+                    } else {
+                        item.done = false;
+                    }
                 }
             })
 
-            const prevList = await List.findOne({index: tempPrevIndex});
-            console.log(`Previous List is ${prevList.name}, with index ${prevList.index}`);
-            res.redirect("/" + prevList.name);
-        }
-    })
-    .catch(function(err) {
-        console.log(err);
-    })
+            //console.log(foundList);
+            foundList.save()
+                .then(function () {
+                    console.log("Updated List");
+                    if (listName === "Today") {
+                        res.redirect("/");
+                    } else {
+                        res.redirect("/" + listName);
+                    }
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
 })
 
-app.post("/del", async function(req,res){
+app.post("/next", async function (req, res) {
+    //Find biggest list's index
+    const maxIndex = await getMaxIndex();
+
+    const currentList = req.body.listName;
+
+    //Find the current list index
+    List.findOne({ name: currentList })
+        .then(async function (foundList) {
+            if (foundList.index === maxIndex) {
+                console.log(`Next List is Today, with index 0`);
+                res.redirect("/");
+
+            } else {
+                // Determine next index
+                const nextList = await List.findOne({ index: { $gt: foundList.index } });
+                console.log(`Next List is ${nextList.name}, with index ${nextList.index}`);
+                res.redirect("/" + nextList.name);
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
+})
+
+app.post("/previous", async function (req, res) {
+    //Find biggest list's index
+    const maxIndex = await getMaxIndex();
+
+    const currentList = req.body.listName;
+
+    //Find the current list index
+    List.findOne({ name: currentList })
+        .then(async function (foundList) {
+            if (foundList.index === 0) {
+                //Find list with maxIndex
+                const maxIndexList = await List.findOne({ index: maxIndex });
+                console.log(`Previous List is ${maxIndexList.name}, with index ${maxIndexList.index}`);
+                res.redirect("/" + maxIndexList.name);
+            } else {
+                //List with lower index
+                const prevLists = await List.find().sort({ index: -1 });
+                //console.log(prevLists);
+                var tempPrevIndex = 0;
+
+                prevLists.forEach(function (list) {
+                    if (list.index < foundList.index && list.index > tempPrevIndex) {
+                        tempPrevIndex = list.index
+                    }
+                })
+
+                const prevList = await List.findOne({ index: tempPrevIndex });
+                console.log(`Previous List is ${prevList.name}, with index ${prevList.index}`);
+                res.redirect("/" + prevList.name);
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
+})
+
+app.post("/del", async function (req, res) {
     const listToDelete = req.body.listName;
 
-    List.deleteOne({ name: listToDelete})
-    .then(function() {
-        console.log(`Deleted List ${listToDelete}`);
-    })
-    .catch(function(err) {
-        console.log(err);
-    })
+    List.deleteOne({ name: listToDelete })
+        .then(function () {
+            console.log(`Deleted List ${listToDelete}`);
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
 
     res.redirect("/");
 })
 
-app.post("/new", async function(req, res) {
+app.post("/new", async function (req, res) {
     const newListName = req.body.listName;
     console.log(newListName);
-    
+
     res.redirect("/" + newListName);
 })
 
 
-app.listen(port, function() {
+app.listen(port, function () {
     console.log(`Server running on port ${port}`);
 })
