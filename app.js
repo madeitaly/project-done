@@ -105,6 +105,18 @@ async function createDefaultList() {
 /////////////////////////////////////
 //  ROUTING OF THE HTTPS REQUESTS ///
 /////////////////////////////////////
+app.get("/home", function(req, res) {
+    res.render("home");
+})
+
+app.get("/login", function(req, res) {
+    res.render("login");
+})
+
+app.get("/register", function(req, res) {
+    res.render("register");
+})
+
 
 app.get("/", async function (req, res) {
 
