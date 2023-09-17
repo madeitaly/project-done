@@ -3,6 +3,12 @@ import express from "express";
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import _ from "lodash"
+import session from "express-session";
+import passport from "passport";
+import passportLocalMongoose from "passport-local-mongoose";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import findOrCreate from "mongoose-findorcreate";
+
 
 const app = express();
 
@@ -17,6 +23,16 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+//Set up Session and Passport to manage these Session
+app.use(session({
+    secret: "Our little secret.",
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 // MongoDB Atlas connection
 mongoose.set('strictQuery', true);
 mongoose.connect(`mongodb+srv://${adminUser}:${adminPass}@cluster0.ecvxgsf.mongodb.net/projectdoneDB`);
@@ -27,6 +43,47 @@ mongoose.connect(`mongodb+srv://${adminUser}:${adminPass}@cluster0.ecvxgsf.mongo
 // }
 
 // Mongoose models
+const userSchema = new mongoose.Schema({
+    email: String,
+    password: String, 
+    googleId: String
+});
+
+userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(findOrCreate);
+
+const User = new mongoose.model("User", userSchema);
+
+passport.use(User.createStrategy());
+
+passport.serializeUser(function (user, cb) {
+    process.nextTick(function () {
+        cb(null, { id: user.id, username: user.username });
+    });
+});
+
+passport.deserializeUser(function (user, cb) {
+    process.nextTick(function () {
+        return cb(null, user);
+    });
+});
+
+
+//OAuth2.0 with Google
+passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:3000/auth/google/today" //,
+    //userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+},
+    function (accessToken, refreshToken, profile, cb) {
+        User.findOrCreate({ googleId: profile.id }, function (err, user) {
+            return cb(err, user);
+        });
+    }
+));
+
+
 const itemSchema = {
     name: String,
     done: {
@@ -117,39 +174,97 @@ app.get("/register", function(req, res) {
     res.render("register");
 })
 
+app.get("/auth/google",
+    passport.authenticate('google', { scope: ['profile'] })
+);
+
+app.get("/auth/google/",
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    function (req, res) {
+        // Successful authentication, redirect .
+        res.redirect("/");
+    }
+);
+
+app.get("/logout", function(req,res) {
+    req.logout((err)=>{
+        if(err){
+            console.log(err);
+        }else{
+            res.redirect("/home");
+        }
+    });
+})
+
+app.post("/register", function(req,res) {
+    User.register({username: req.body.username}, req.body.password, function(err, user) {
+        if(err) {
+            console.log(err);
+            res.redirect("/register");
+        } else {
+            passport.authenticate("local")(req,res,() => {
+                res.redirect("/");
+            });
+        }
+    })
+})
+
+app.post("/login", function(req,res) {
+    const user = new User({
+        username: req.body.username,
+        password: req.body.password
+    });
+
+    req.login(user, function(err) {
+        if(err) {
+            console.log(err);
+        } else {
+            passport.authenticate("local")(req, res, () => {
+                res.redirect("/");
+            })
+        }
+    })
+})
+
 
 app.get("/", async function (req, res) {
 
-    const listCounter = await getListCounter();
+    //Verify if the user is logged in
+    if(req.isAuthenticated()){
+        const listCounter = await getListCounter();
 
-    //If there are no lists then create a default Today list
-    if (listCounter === 0) {
-        await createDefaultList();
-    }
+        //If there are no lists then create a default Today list
+        if (listCounter === 0) {
+            await createDefaultList();
+        }
 
-    //Find the items in Today List and render the page
-    await List.findOne({ name: "Today" })
-        .then(function (todayList) {
-            if (todayList.items.length === 0) {
-                //Add default Items to Today's List
-                todayList.items = defaultItems;
-                todayList.save()
-                    .then(res.redirect("/"))
-                    .catch(function (err) {
-                        console.log(err);
+        //Find the items in Today List and render the page
+        await List.findOne({ name: "Today" })
+            .then(function (todayList) {
+                if (todayList.items.length === 0) {
+                    //Add default Items to Today's List
+                    todayList.items = defaultItems;
+                    todayList.save()
+                        .then(res.redirect("/"))
+                        .catch(function (err) {
+                            console.log(err);
+                        })
+                } else {
+                    //Render the default List
+                    res.render("list", {
+                        listTitle: todayList.name,
+                        newListItems: todayList.items,
+                        creationDate: todayList.created
                     })
-            } else {
-                //Render the default List
-                res.render("list", {
-                    listTitle: todayList.name,
-                    newListItems: todayList.items,
-                    creationDate: todayList.created
-                })
-            }
-        })
-        .catch(function (err) {
-            console.log(err);
-        })
+                }
+            })
+            .catch(function (err) {
+                console.log(err);
+            })
+    } else {
+        res.redirect("/login");
+    }
+    
 })
 
 
