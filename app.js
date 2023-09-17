@@ -73,7 +73,7 @@ passport.deserializeUser(function (user, cb) {
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/google/today" //,
+    callbackURL: "https://tricky-bear-gloves.cyclic.app/auth/google/" //,
     //userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
 },
     function (accessToken, refreshToken, profile, cb) {
@@ -262,7 +262,7 @@ app.get("/", async function (req, res) {
                 console.log(err);
             })
     } else {
-        res.redirect("/login");
+        res.redirect("/home");
     }
     
 })
