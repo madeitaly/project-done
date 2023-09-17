@@ -4,15 +4,20 @@
     "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
+    "express-session": "^1.17.3",
     "lodash": "^4.17.21",
-    "mongoose": "^7.5.0"
+    "mongoose": "^7.5.0",
+    "mongoose-findorcreate": "^4.0.0",
+    "passport": "^0.6.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^8.0.0"
   },
   "name": "project-done",
   "description": "A simple To-Do List website with authenticated session and based on HTML, CSS, JS and EJS. The purpose il primarily for portfolio.",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
-  "devDependencies": {},
   "scripts": {
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"

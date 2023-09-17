@@ -1,13 +1,6 @@
-<%- include("header") -%>
+<%- include("partials/header") -%>
 
-    <nav class="navbar bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">
-                <img src="images/done_logo.jpeg" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
-                Project Done!
-            </a>
-        </div>
-    </nav>
+<%- include("partials/navbar") -%>    
 
     <div class="main-flexbox">
 
@@ -125,9 +118,11 @@
             </form>
         </div>
 
+        
 
     </div>
 
+    <a class="btn btn-light btn-lg" href="/logout" role="button">Log Out</a>
 
 
-    <%- include("footer") -%>
+    <%- include("partials/footer") -%>
