@@ -25,7 +25,7 @@ app.use(express.static("public"));
 
 //Set up Session and Passport to manage these Session
 app.use(session({
-    secret: "Our little secret.",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }));
